@@ -91,7 +91,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   void _uploadReceiptPhotoAndSaveExpenseMobile() {
     if (receiptPhoto != null) {
-      fbService.addReceiptPhoto(receiptPhoto!).then((imageUrl) {
+      fbService.addReceiptPhotoFromFile(receiptPhoto!).then((imageUrl) {
         _saveExpense(imageUrl!);
       }).onError((error, stackTrace) {
         _showErrorSnackBar(error!);
