@@ -23,16 +23,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String? mode;
   double? cost;
   DateTime? travelDate;
-  String? base64Image;
-  File? receiptPhoto;
+  String? base64Image; // For Web
+  File? receiptPhoto; // For Mobile
 
   Future<void> pickImage(int mode) async {
+    // Using kIsWeb to check if the platform is Web
     if (kIsWeb) {
       // For Web
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
       );
 
+      // Check if the user has selected a file
+      // If the user has selected a file, convert the file to base64
       if (result != null) {
         Uint8List fileBytes = result.files.first.bytes!;
         String base64String = base64Encode(fileBytes);
@@ -51,6 +54,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         maxHeight: 150,
       );
 
+      // Check if the user has selected a file
+      // If the user has selected a file, set the file to the receiptPhoto
       if (pickedFile != null) {
         setState(() {
           receiptPhoto = File(pickedFile.path);
@@ -69,6 +74,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       debugPrint(
           'Travel Date: ${DateFormat('dd/MM/yyyy').format(travelDate!)}');
 
+      // Check if the platform is Web or Mobile
       if (kIsWeb) {
         _uploadReceiptPhotoAndSaveExpenseWeb();
       } else {
@@ -77,30 +83,40 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
+  // Upload the receipt photo and save the expense
+  // For Web
   void _uploadReceiptPhotoAndSaveExpenseWeb() {
     if (base64Image != null) {
+      // Upload the receipt photo
       fbService.addReceiptPhotoFromBase64(base64Image!).then((imageUrl) {
+        // Save the expense
         _saveExpense(imageUrl!);
       }).onError((error, stackTrace) {
         _showErrorSnackBar(error!);
       });
     } else {
+      // If there is no image selected
       _saveExpense('');
     }
   }
 
+  // Upload the receipt photo and save the expense
+  // For Mobile
   void _uploadReceiptPhotoAndSaveExpenseMobile() {
     if (receiptPhoto != null) {
+      // Upload the receipt photo
       fbService.addReceiptPhotoFromFile(receiptPhoto!).then((imageUrl) {
         _saveExpense(imageUrl!);
       }).onError((error, stackTrace) {
         _showErrorSnackBar(error!);
       });
     } else {
+      // If there is no image selected
       _saveExpense('');
     }
   }
 
+  // Save the expense
   void _saveExpense(String imageUrl) {
     fbService
         .addExpense(imageUrl, purpose!, mode!, cost!, travelDate!)
@@ -111,6 +127,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
   }
 
+  // Handle the success of saving the expense
   void _handleSuccess() {
     // Hide the keyboard
     FocusScope.of(context).unfocus();
@@ -126,6 +143,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     ));
   }
 
+  // Show a SnackBar with the error message
   void _showErrorSnackBar(Object error) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('Error: $error')));

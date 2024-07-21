@@ -30,12 +30,15 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   String? base64Image; // For web
 
   Future<void> pickImage(int mode) async {
+    // Using kIsWeb to check if the platform is Web
     if (kIsWeb) {
       // For Web
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
       );
 
+      // Check if the user has selected a file
+      // If the user has selected a file, convert the file to base64
       if (result != null) {
         Uint8List fileBytes = result.files.first.bytes!;
         String base64String = base64Encode(fileBytes);
@@ -55,6 +58,8 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         maxHeight: 150,
       );
 
+      // Check if the user has selected a file
+      // If the user has selected a file, set the receiptPhoto
       if (pickedFile != null) {
         setState(() {
           receiptPhoto = File(pickedFile.path);
@@ -76,21 +81,30 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
           'Travel Date: ${DateFormat('dd/MM/yyyy').format(travelDate!)}');
       debugPrint('Receipt Photo: $imageUrl');
 
+      // Using kIsWeb to check if the platform is Web
       if (kIsWeb) {
+        // For Web
         if (base64Image != null) {
+          // If the user has selected a file, upload the file to Firebase Storage
           fbService.addReceiptPhotoFromBase64(base64Image!).then((imageUrl) {
             _updateExpense(id, imageUrl!, purpose!, mode!, cost!, travelDate!);
           }).catchError((error, stackTrace) => _handleError(error));
         } else {
+          // If the user has not selected a file, update the expense without changing the image
+          // imageUrl is null when the user has not selected a file
           _updateExpense(
               id, imageUrl ?? '', purpose!, mode!, cost!, travelDate!);
         }
       } else {
+        // For Mobile
         if (receiptPhoto != null) {
+          // If the user has selected a file, upload the file to Firebase Storage
           fbService.addReceiptPhotoFromFile(receiptPhoto!).then((imageUrl) {
             _updateExpense(id, imageUrl!, purpose!, mode!, cost!, travelDate!);
           }).catchError((error, stackTrace) => _handleError(error));
         } else {
+          // If the user has not selected a file, update the expense without changing the image
+          // imageUrl is null when the user has not selected a file
           _updateExpense(
               id, imageUrl ?? '', purpose!, mode!, cost!, travelDate!);
         }
@@ -98,6 +112,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     }
   }
 
+  // Update the expense in Firestore
   void _updateExpense(String id, String imageUrl, String purpose, String mode,
       double cost, DateTime travelDate) {
     fbService
@@ -106,6 +121,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         .catchError((error, stackTrace) => _handleError(error));
   }
 
+  // Handle a successful update
   void _handleSuccess() {
     // Hide the keyboard
     FocusScope.of(context).unfocus();
@@ -123,6 +139,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     Navigator.of(context).pop();
   }
 
+  // Handle an error
   void _handleError(Object error) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('Error: $error')));
