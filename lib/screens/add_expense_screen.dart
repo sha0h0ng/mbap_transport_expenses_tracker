@@ -1,0 +1,284 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:transport_expenses_tracker/services/firebase_service.dart';
+
+class AddExpenseScreen extends StatefulWidget {
+  static String routeName = '/add-expense';
+
+  @override
+  State<AddExpenseScreen> createState() => _AddExpenseScreenState();
+}
+
+class _AddExpenseScreenState extends State<AddExpenseScreen> {
+  final FirebaseService fbService = GetIt.instance<FirebaseService>();
+  var form = GlobalKey<FormState>();
+
+  String? purpose;
+  String? mode;
+  double? cost;
+  DateTime? travelDate;
+  String? base64Image;
+  File? receiptPhoto;
+
+  Future<void> pickImage(int mode) async {
+    if (kIsWeb) {
+      // For Web
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+
+      if (result != null) {
+        Uint8List fileBytes = result.files.first.bytes!;
+        String base64String = base64Encode(fileBytes);
+        setState(() {
+          base64Image = base64String;
+        });
+      }
+    } else {
+      // For Mobile
+      ImageSource chosenSource =
+          mode == 0 ? ImageSource.camera : ImageSource.gallery;
+      final pickedFile = await ImagePicker().pickImage(
+        source: chosenSource,
+        maxWidth: 600,
+        imageQuality: 50,
+        maxHeight: 150,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          receiptPhoto = File(pickedFile.path);
+        });
+      }
+    }
+  }
+
+  void saveForm() {
+    travelDate ??= DateTime.now();
+    if (form.currentState!.validate()) {
+      form.currentState!.save();
+      debugPrint('Purpose: $purpose');
+      debugPrint('Mode: $mode');
+      debugPrint('Cost: ${cost!.toStringAsFixed(2)}');
+      debugPrint(
+          'Travel Date: ${DateFormat('dd/MM/yyyy').format(travelDate!)}');
+
+      if (kIsWeb) {
+        _uploadReceiptPhotoAndSaveExpenseWeb();
+      } else {
+        _uploadReceiptPhotoAndSaveExpenseMobile();
+      }
+    }
+  }
+
+  void _uploadReceiptPhotoAndSaveExpenseWeb() {
+    if (base64Image != null) {
+      fbService.addReceiptPhotoFromBase64(base64Image!).then((imageUrl) {
+        _saveExpense(imageUrl!);
+      }).onError((error, stackTrace) {
+        _showErrorSnackBar(error!);
+      });
+    } else {
+      _saveExpense('');
+    }
+  }
+
+  void _uploadReceiptPhotoAndSaveExpenseMobile() {
+    if (receiptPhoto != null) {
+      fbService.addReceiptPhoto(receiptPhoto!).then((imageUrl) {
+        _saveExpense(imageUrl!);
+      }).onError((error, stackTrace) {
+        _showErrorSnackBar(error!);
+      });
+    } else {
+      _saveExpense('');
+    }
+  }
+
+  void _saveExpense(String imageUrl) {
+    fbService
+        .addExpense(imageUrl, purpose!, mode!, cost!, travelDate!)
+        .then((value) {
+      _handleSuccess();
+    }).onError((error, stackTrace) {
+      _showErrorSnackBar(error!);
+    });
+  }
+
+  void _handleSuccess() {
+    // Hide the keyboard
+    FocusScope.of(context).unfocus();
+
+    // Reset the form
+    form.currentState!.reset();
+    travelDate = null;
+    receiptPhoto = null;
+
+    // Show a SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Travel expense added successfully!'),
+    ));
+  }
+
+  void _showErrorSnackBar(Object error) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Error: $error')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Add Expense'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              saveForm();
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(10),
+        child: Form(
+          key: form,
+          child: Column(
+            children: [
+              DropdownButtonFormField(
+                decoration: const InputDecoration(
+                  label: Text('Mode of Transport'),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'bus', child: Text('Bus')),
+                  DropdownMenuItem(value: 'grab', child: Text('Grab')),
+                  DropdownMenuItem(value: 'mrt', child: Text('MRT')),
+                  DropdownMenuItem(value: 'taxi', child: Text('Taxi')),
+                ],
+                onChanged: (value) {
+                  mode = value;
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a mode of transport';
+                  } else {
+                    return null;
+                  }
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(label: Text('Cost')),
+                onSaved: (value) {
+                  cost = double.parse(value!);
+                },
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter a cost';
+                  } else if (double.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null; // no error
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(label: Text('Purpose')),
+                onSaved: (value) {
+                  purpose = value as String;
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please provide a purpose.';
+                  } else if (value.length < 5) {
+                    return 'Please enter a description that is at least 5 characters.';
+                  } else {
+                    return null;
+                  }
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(() {
+                    if (travelDate == null) {
+                      return 'No date chosen';
+                    } else {
+                      return 'Date: ${DateFormat('dd/MM/yyyy').format(travelDate!)}';
+                    }
+                  }()),
+                  TextButton(
+                      child: const Text('Choose Date',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate:
+                              DateTime.now().subtract(const Duration(days: 14)),
+                          lastDate: DateTime.now(),
+                        ).then((value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setState(() {
+                            travelDate = value;
+                          });
+                        });
+                      })
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 150,
+                    height: 100,
+                    decoration: const BoxDecoration(color: Colors.grey),
+                    child: kIsWeb
+                        ? base64Image != null
+                            ? FittedBox(
+                                fit: BoxFit.fill,
+                                child: Image.network(
+                                  'data:image/png;base64,$base64Image',
+                                ),
+                              )
+                            : Center(child: Text('No image selected'))
+                        : receiptPhoto != null
+                            ? FittedBox(
+                                fit: BoxFit.fill,
+                                child: Image.file(receiptPhoto!),
+                              )
+                            : Center(child: Text('No image selected')),
+                  ),
+                  Column(
+                    children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.camera_alt),
+                        onPressed: () => pickImage(0),
+                        label: const Text('Take Photo'),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.image),
+                        onPressed: () => pickImage(1),
+                        label: const Text('Add Image'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
