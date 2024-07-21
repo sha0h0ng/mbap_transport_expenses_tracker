@@ -87,7 +87,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         }
       } else {
         if (receiptPhoto != null) {
-          fbService.addReceiptPhoto(receiptPhoto!).then((imageUrl) {
+          fbService.addReceiptPhotoFromFile(receiptPhoto!).then((imageUrl) {
             _updateExpense(id, imageUrl!, purpose!, mode!, cost!, travelDate!);
           }).catchError((error, stackTrace) => _handleError(error));
         } else {

@@ -56,7 +56,7 @@ class FirebaseService {
   }
 
   // Upload file into Firebase Storage
-  Future<String?> addReceiptPhoto(File receiptPhoto) {
+  Future<String?> addReceiptPhotoFromFile(File receiptPhoto) {
     return FirebaseStorage.instance
         .ref()
         .child(DateTime.now().toString() + '_' + basename(receiptPhoto.path))
