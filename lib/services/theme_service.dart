@@ -14,7 +14,7 @@ class ThemeService {
   void setTheme(Color selectedTheme, String stringTheme) {
     themeStreamController.add(selectedTheme);
     prefs!.setString('selectedTheme', stringTheme);
-    debugPrint('Theme: ' + stringTheme);
+    debugPrint('Theme: $stringTheme');
   }
 
   void loadTheme() async {
@@ -22,13 +22,15 @@ class ThemeService {
     Color currentTheme = Colors.deepPurple;
     if (prefs!.containsKey('selectedTheme')) {
       String selectedTheme = prefs!.getString('selectedTheme')!;
-      if (selectedTheme == 'deepPurple')
+      if (selectedTheme == 'deepPurple') {
         currentTheme = Colors.deepPurple;
-      else if (selectedTheme == 'blue')
+      } else if (selectedTheme == 'blue') {
         currentTheme = Colors.blue;
-      else if (selectedTheme == 'green')
+      } else if (selectedTheme == 'green') {
         currentTheme = Colors.green;
-      else if (selectedTheme == 'red') currentTheme = Colors.red;
+      } else if (selectedTheme == 'red') {
+        currentTheme = Colors.red;
+      }
     }
     themeStreamController.add(currentTheme);
   }

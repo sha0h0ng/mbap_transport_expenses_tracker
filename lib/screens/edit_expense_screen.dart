@@ -273,7 +273,9 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                             fit: BoxFit.fill,
                             child: Image.file(receiptPhoto!),
                           )
-                        : (kIsWeb && base64Image != null)
+                        : (kIsWeb &&
+                                base64Image !=
+                                    null) // Check if the platform is Web
                             ? FittedBox(
                                 fit: BoxFit.fill,
                                 child: Image.memory(

@@ -61,32 +61,6 @@ class MyApp extends StatelessWidget {
             });
       },
     );
-
-    // return StreamBuilder<User?>(
-    //   stream: fbService.getAuthUser(),
-    //   builder: (context, snapshot) {
-    //     return MaterialApp(
-    //       theme: ThemeData(
-    //         colorScheme: ColorScheme.fromSeed(
-    //           seedColor: Colors.deepPurple,
-    //         ),
-    //         useMaterial3: true,
-    //       ),
-    //       home: snapshot.connectionState != ConnectionState.waiting &&
-    //               snapshot.hasData
-    //           ? MainScreen()
-    //           : AuthScreen(),
-    //       routes: {
-    //         AddExpenseScreen.routeName: (context) => AddExpenseScreen(),
-    //         ExpensesListScreen.routeName: (context) => ExpensesListScreen(),
-    //         EditExpenseScreen.routeName: (context) => EditExpenseScreen(),
-    //         ResetPasswordScreen.routeName: (context) => ResetPasswordScreen(),
-    //         AuthScreen.routeName: (context) => AuthScreen(),
-    //       },
-    //       debugShowCheckedModeBanner: false,
-    //     );
-    //   },
-    // );
   }
 }
 
@@ -153,7 +127,7 @@ class MainScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Image.asset('images/creditcard.png'),
-                  Text('Total Spent: \$ ' + sum.toStringAsFixed(2))
+                  Text('Total Spent: \$ ${sum.toStringAsFixed(2)}')
                 ],
               ),
             ),

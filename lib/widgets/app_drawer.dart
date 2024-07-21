@@ -40,28 +40,31 @@ class AppDrawer extends StatelessWidget {
           leading: const Icon(Icons.palette),
           title:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('Themes'),
+            const Text('Themes'),
             GestureDetector(
-              child: CircleAvatar(
+              child: const CircleAvatar(
                   backgroundColor: Colors.deepPurple, maxRadius: 15),
               onTap: () {
                 themeService.setTheme(Colors.deepPurple, 'deepPurple');
               },
             ),
             GestureDetector(
-              child: CircleAvatar(backgroundColor: Colors.blue, maxRadius: 15),
+              child: const CircleAvatar(
+                  backgroundColor: Colors.blue, maxRadius: 15),
               onTap: () {
                 themeService.setTheme(Colors.blue, 'blue');
               },
             ),
             GestureDetector(
-              child: CircleAvatar(backgroundColor: Colors.green, maxRadius: 15),
+              child: const CircleAvatar(
+                  backgroundColor: Colors.green, maxRadius: 15),
               onTap: () {
                 themeService.setTheme(Colors.green, 'green');
               },
             ),
             GestureDetector(
-              child: CircleAvatar(backgroundColor: Colors.red, maxRadius: 15),
+              child: const CircleAvatar(
+                  backgroundColor: Colors.red, maxRadius: 15),
               onTap: () {
                 themeService.setTheme(Colors.red, 'red');
               },

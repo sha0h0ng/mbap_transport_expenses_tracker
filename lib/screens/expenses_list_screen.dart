@@ -19,7 +19,7 @@ class ExpensesListScreen extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pushNamed(AddExpenseScreen.routeName);
           },
-          child: Icon(Icons.add)),
+          child: const Icon(Icons.add)),
     );
   }
 }

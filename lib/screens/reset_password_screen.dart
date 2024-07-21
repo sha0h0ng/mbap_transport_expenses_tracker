@@ -52,12 +52,13 @@ class ResetPasswordScreen extends StatelessWidget {
                 decoration: const InputDecoration(label: Text('Email')),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (value == null)
+                  if (value == null) {
                     return "Please provide an email address.";
-                  else if (!value.contains('@'))
+                  } else if (!value.contains('@')) {
                     return "Please provide a valid email address.";
-                  else
+                  } else {
                     return null;
+                  }
                 },
                 onSaved: (value) {
                   email = value;

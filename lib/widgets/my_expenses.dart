@@ -77,7 +77,7 @@ class _MyExpensesState extends State<MyExpenses> {
                           arguments: snapshot.data![i]);
                     },
                     trailing: IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                       onPressed: () {
                         deleteExpense(snapshot.data![i].id);
                       },
