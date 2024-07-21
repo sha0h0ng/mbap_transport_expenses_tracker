@@ -261,21 +261,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     width: 150,
                     height: 100,
                     decoration: const BoxDecoration(color: Colors.grey),
-                    child: kIsWeb
+                    child: kIsWeb // Check if the platform is Web or Mobile
                         ? base64Image != null
                             ? FittedBox(
+                                // If the platform is Web and not null, display the base64 image
                                 fit: BoxFit.fill,
                                 child: Image.network(
                                   'data:image/png;base64,$base64Image',
                                 ),
                               )
-                            : Center(child: Text('No image selected'))
+                            : const Center(
+                                // If there is no image selected
+                                child: Text('No image selected'),
+                              )
                         : receiptPhoto != null
                             ? FittedBox(
+                                // If the platform is Mobile and not null, display the image file
                                 fit: BoxFit.fill,
                                 child: Image.file(receiptPhoto!),
                               )
-                            : Center(child: Text('No image selected')),
+                            : const Center(
+                                // If there is no image selected
+                                child: Text('No image selected'),
+                              ),
                   ),
                   Column(
                     children: [

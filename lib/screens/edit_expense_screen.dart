@@ -1,14 +1,13 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:transport_expenses_tracker/models/expense.dart';
 import 'package:transport_expenses_tracker/services/firebase_service.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditExpenseScreen extends StatefulWidget {
   static String routeName = '/edit-expense';
@@ -274,55 +273,67 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                             fit: BoxFit.fill,
                             child: Image.file(receiptPhoto!),
                           )
-                        : imageUrl != ''
+                        : (kIsWeb && base64Image != null)
                             ? FittedBox(
                                 fit: BoxFit.fill,
-                                child: Image.network(
-                                  imageUrl!,
-                                  loadingBuilder: (BuildContext context,
-                                      Widget child,
-                                      ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return child;
-                                    } else {
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  errorBuilder: (BuildContext context,
-                                      Object error, StackTrace? stackTrace) {
-                                    // Print the error to the debug console
-                                    print('Error loading image: $error');
-                                    return Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.error, color: Colors.red),
-                                          SizedBox(height: 8),
-                                          Text('Failed to load image'),
-                                          SizedBox(height: 8),
-                                          Text(error
-                                              .toString()), // Print error message to UI
-                                        ],
-                                      ),
-                                    );
-                                  },
+                                child: Image.memory(
+                                  base64Decode(base64Image!),
+                                  fit: BoxFit.cover,
                                 ),
                               )
-                            : Center(
-                                child: const Text('No image selected'),
-                              ),
+                            : imageUrl != ''
+                                ? FittedBox(
+                                    fit: BoxFit.fill,
+                                    child: Image.network(
+                                      imageUrl!,
+                                      loadingBuilder: (BuildContext context,
+                                          Widget child,
+                                          ImageChunkEvent? loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        } else {
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      errorBuilder: (BuildContext context,
+                                          Object error,
+                                          StackTrace? stackTrace) {
+                                        // Print the error to the debug console
+                                        debugPrint(
+                                            'Error loading image: $error');
+                                        return Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.error,
+                                                  color: Colors.red),
+                                              const SizedBox(height: 8),
+                                              const Text(
+                                                  'Failed to load image'),
+                                              const SizedBox(height: 8),
+                                              Text(error
+                                                  .toString()), // Print error message to UI
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Text('No image selected'),
+                                  ),
                   ),
                   Column(
                     children: [
